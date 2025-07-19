@@ -5,7 +5,8 @@ from aws_cdk import (
     aws_events as events,
     aws_events_targets as targets,
     aws_ec2 as ec2,
-    aws_iam as iam
+    aws_iam as iam,
+    RemovalPolicy
 )
 from constructs import Construct
 from pathlib import Path
@@ -49,6 +50,8 @@ class SynapseStatusStack(Stack):
             vpc=vpc,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS, availability_zones=['us-east-1a', 'us-east-1c'])
         )
+
+        function.apply_removal_policy(RemovalPolicy.DESTROY)
 
         rule = events.Rule(
             self, "StatusScheduleRule",
