@@ -18,6 +18,7 @@ class SynapseStatusStack(Stack):
                  statuspage_repo_component_id: str,
                  statuspage_website_component_id: str,
                  vpc_id: str,
+                 exec_schedule_min: int,
                  **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -41,7 +42,7 @@ class SynapseStatusStack(Stack):
                 "STATUS_PAGE_IO_API_KEY": statuspage_api_key,
                 "STATUS_PAGE_IO_PAGE_ID": statuspage_page_id,
                 "STATUS_PAGE_IO_REPO_COMPONENT_ID": statuspage_repo_component_id,
-                "STATUS_PAGE_IO_WEBSITE_COMPONENT_ID": statuspage_website_component_id,
+                "STATUS_PAGE_IO_WEBSITE_COMPONENT_ID": statuspage_website_component_id
             },
             role=lambda_role,
             timeout=Duration.seconds(30),
@@ -51,6 +52,6 @@ class SynapseStatusStack(Stack):
 
         rule = events.Rule(
             self, "StatusScheduleRule",
-            schedule=events.Schedule.rate(Duration.minutes(6)),
+            schedule=events.Schedule.rate(Duration.minutes(exec_schedule_min)),
         )
         rule.add_target(targets.LambdaFunction(function))
