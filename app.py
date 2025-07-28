@@ -20,13 +20,14 @@ def get_required_int_env(key: str) -> int:
 
 app = cdk.App()
 SynapseStatusStack(app, "SynapseStatusStack",
-    env = cdk.Environment(account=get_required_env("ACCOUNT_ID"), region="us-east-1"),
-    statuspage_api_key = get_required_env("STATUSPAGE_API_KEY"),
-    statuspage_page_id = get_required_env("STATUSPAGE_PAGE_ID"),
-    statuspage_repo_component_id = get_required_env("STATUSPAGE_REPO_COMPONENT_ID"),
-    statuspage_website_component_id = get_required_env("STATUSPAGE_WEBSITE_COMPONENT_ID"),
-    vpc_id = get_required_env("VPC_ID"),
-    exec_schedule_min = get_required_int_env("EXEC_SCHEDULE_MIN")
-  )
+                   env = cdk.Environment(account=get_required_env("ACCOUNT_ID"), region="us-east-1"),
+                   statuspage_api_key = get_required_env("STATUSPAGE_API_KEY"),
+                   statuspage_page_id = get_required_env("STATUSPAGE_PAGE_ID"),
+                   statuspage_repo_component_id = get_required_env("STATUSPAGE_REPO_COMPONENT_ID"),
+                   statuspage_website_component_id = get_required_env("STATUSPAGE_WEBSITE_COMPONENT_ID"),
+                   vpc_id = get_required_env("VPC_ID"),
+                   available_zones=get_required_env("AVAILABLE_ZONES").split(","),
+                   exec_schedule_expression= get_required_int_env("EXEC_SCHEDULE_MIN")
+                   )
 
 app.synth()

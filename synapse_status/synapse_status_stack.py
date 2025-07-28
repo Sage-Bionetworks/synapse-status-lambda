@@ -1,3 +1,4 @@
+
 from aws_cdk import (
     Stack,
     Duration,
@@ -19,7 +20,8 @@ class SynapseStatusStack(Stack):
                  statuspage_repo_component_id: str,
                  statuspage_website_component_id: str,
                  vpc_id: str,
-                 exec_schedule_min: int,
+                 available_zones: list[str],
+                 exec_schedule_expression: str,
                  **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
@@ -49,13 +51,13 @@ class SynapseStatusStack(Stack):
             role=lambda_role,
             timeout=Duration.seconds(30),
             vpc=vpc,
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS, availability_zones=['us-east-1a', 'us-east-1c'])
+            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS, availability_zones=available_zones)
         )
 
         function.apply_removal_policy(RemovalPolicy.DESTROY)
 
         rule = events.Rule(
             self, "StatusScheduleRule",
-            schedule=events.Schedule.rate(Duration.minutes(exec_schedule_min)),
+            schedule=events.Schedule.expression(exec_schedule_expression),
         )
         rule.add_target(targets.LambdaFunction(function))
