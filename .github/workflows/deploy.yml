@@ -46,7 +46,6 @@ jobs:
        
       - name: Deploy CDK Stack
         env:
-          ACCOUNT_ID: 325565585839
           VPC_ID: vpc-07c1769bf5cb50b98
           AVAILABLE_ZONES: "us-east-1a,us-east-1c"
           STATUSPAGE_API_KEY: ${{ secrets.STATUSPAGE_API_KEY }}
@@ -55,6 +54,6 @@ jobs:
           STATUSPAGE_WEBSITE_COMPONENT_ID: dcgr2fz40pqc
           EXEC_SCHEDULE_EXPRESSION: "5 minutes"
         run: |
-          cdk --region us-east-1 deploy --require-approval never
+          cdk deploy --require-approval never
 
 

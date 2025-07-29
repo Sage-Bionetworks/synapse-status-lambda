@@ -41,7 +41,7 @@ def get_required_schedule_expression_env(time_expr: str) -> str:
 
 app = cdk.App()
 SynapseStatusStack(app, "SynapseStatusStack",
-                   env = cdk.Environment(account=get_required_env("ACCOUNT_ID"), region="us-east-1"),
+                   scope=app,
                    statuspage_api_key = get_required_env("STATUSPAGE_API_KEY"),
                    statuspage_page_id = get_required_env("STATUSPAGE_PAGE_ID"),
                    statuspage_repo_component_id = get_required_env("STATUSPAGE_REPO_COMPONENT_ID"),
