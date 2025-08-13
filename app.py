@@ -11,14 +11,14 @@ def get_required_env(key: str) -> str:
     raise ValueError(f"Missing environment variable: {key}")
   return value
 
-def get_required_schedule_expression_env(time_expr: str) -> str:
-    time_expr = time_expr.strip().lower()
-    
+def get_required_schedule_expression_env(key: str) -> str:
+    time_expr = get_required_env(key).strip().lower()
+
     VALID_UNITS = [ "seconds", "minutes", "hours" ]
 
     # Split into value and unit
     parts = time_expr.split()
-    
+
     if len(parts) != 2:
         raise ValueError(f"Invalid time expression format: {time_expr}. Expected format: '<number> <unit>'")
     
@@ -28,7 +28,6 @@ def get_required_schedule_expression_env(time_expr: str) -> str:
     if unit not in VALID_UNITS:
         raise ValueError(f"Invalid time unit: {unit}. Must be one of: {', '.join(VALID_UNITS)}")
     
-    # Validate the value is a positive integer
     try:
         number = int(value)
         if number <= 0:
@@ -40,8 +39,8 @@ def get_required_schedule_expression_env(time_expr: str) -> str:
 
 
 app = cdk.App()
-SynapseStatusStack(app, "SynapseStatusStack",
-                   scope=app,
+SynapseStatusStack(scope=app, construct_id="SynapseStatusStack",
+                   env=cdk.Environment(account=os.environ["CDK_DEFAULT_ACCOUNT"], region=os.environ["CDK_DEFAULT_REGION"]),
                    statuspage_api_key = get_required_env("STATUSPAGE_API_KEY"),
                    statuspage_page_id = get_required_env("STATUSPAGE_PAGE_ID"),
                    statuspage_repo_component_id = get_required_env("STATUSPAGE_REPO_COMPONENT_ID"),

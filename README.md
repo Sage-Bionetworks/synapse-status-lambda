@@ -6,7 +6,6 @@ The lambda runs on a schedule (typically 5 mins)
 - uses the Statuspage.io API to update their corresponding statuses on https://synapse.statuspage.io/
 
 Deployment is done with Github workflow with the following parameters (in deploy.yml):
-- ACCOUNT_ID: <account_where_lambda_is_deployed>
 - VPC_ID: <vpc_where_lambda_is_deployed>
 - AVAILABLE_ZONES: <comma_delimited_string_of_zones> , ("us-east-1a, us-east-1b")
 - STATUSPAGE_API_KEY: ${{ secrets.STATUSPAGE_API_KEY }} , key is stored as secret in the prod enviroment
