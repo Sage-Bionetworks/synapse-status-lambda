@@ -1,0 +1,59 @@
+name: Deploy synapse-status-lambda
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency: ci-${{ github.ref }}
+    
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup AWS CDK
+        run: npm install -g aws-cdk
+
+      - name: Setup Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: config-creds
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::325565585839:role/sagebase-github-oidc-synapse-status-lambda-deploy
+          role-session-name: GitHubActions-${{ github.repository_owner }}-${{ github.event.repository.name }}-${{ github.run_id }}
+          role-duration-seconds: 900
+       
+      - name: Deploy CDK Stack
+        env:
+          VPC_ID: vpc-07c1769bf5cb50b98
+          AVAILABLE_ZONES: "us-east-1a,us-east-1c"
+          STATUSPAGE_API_KEY: ${{ secrets.STATUSPAGE_API_KEY }}
+          STATUSPAGE_PAGE_ID: kh896k90gyvg
+          STATUSPAGE_REPO_COMPONENT_ID: sb280jd7bbs6
+          STATUSPAGE_WEBSITE_COMPONENT_ID: dcgr2fz40pqc
+          EXEC_SCHEDULE_EXPRESSION: "5 minutes"
+        run: |
+          cdk deploy --require-approval never
+
+
