@@ -7,7 +7,11 @@ from aws_cdk import (
     aws_events_targets as targets,
     aws_ec2 as ec2,
     aws_iam as iam,
-    RemovalPolicy
+    aws_cloudwatch as cloudwatch,
+    aws_cloudwatch_actions as cw_actions,
+    aws_sns as sns,
+    RemovalPolicy,
+    Fn
 )
 from constructs import Construct
 from pathlib import Path
@@ -61,3 +65,19 @@ class SynapseStatusStack(Stack):
             schedule=events.Schedule.expression(exec_schedule_expression),
         )
         rule.add_target(targets.LambdaFunction(function))
+
+        # The handler rethrows after attempting both updates, so any failed update shows up as an error
+        errors_alarm = cloudwatch.Alarm(
+            self, "StatusUpdaterErrorsAlarm",
+            alarm_description="Synapse StatusPage updater Lambda failed; StatusPage components may be stale.",
+            metric=function.metric_errors(period=Duration.minutes(5), statistic="Sum"),
+            threshold=1,
+            evaluation_periods=1,
+            comparison_operator=cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
+            treat_missing_data=cloudwatch.TreatMissingData.NOT_BREACHING,
+        )
+        alarm_topic = sns.Topic.from_topic_arn(
+            self, "AlarmTopic",
+            Fn.import_value("us-east-1-synapse-prod-global-resources-NotificationTopic"))
+        errors_alarm.add_alarm_action(cw_actions.SnsAction(alarm_topic))
+        errors_alarm.add_ok_action(cw_actions.SnsAction(alarm_topic))
