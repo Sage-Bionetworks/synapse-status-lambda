@@ -66,13 +66,15 @@ class SynapseStatusStack(Stack):
         )
         rule.add_target(targets.LambdaFunction(function))
 
-        # The handler rethrows after attempting both updates, so any failed update shows up as an error
+        # The handler rethrows after attempting both updates, so any failed update shows up as an error.
+        # Alarm only after 3 consecutive 5-minute periods with errors (~3 failed scheduled runs) to ride out transient blips.
         errors_alarm = cloudwatch.Alarm(
             self, "StatusUpdaterErrorsAlarm",
-            alarm_description="Synapse StatusPage updater Lambda failed; StatusPage components may be stale.",
+            alarm_description="Synapse StatusPage updater Lambda failed 3 runs in a row; StatusPage components may be stale.",
             metric=function.metric_errors(period=Duration.minutes(5), statistic="Sum"),
             threshold=1,
-            evaluation_periods=1,
+            evaluation_periods=3,
+            datapoints_to_alarm=3,
             comparison_operator=cloudwatch.ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
             treat_missing_data=cloudwatch.TreatMissingData.NOT_BREACHING,
         )
